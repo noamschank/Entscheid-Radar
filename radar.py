@@ -103,6 +103,8 @@ def fetch_decisions(topics):
         spider = next((s for s in SPIDERS if index.endswith(s.lower())), "CH_BGer")
         att = src.get("attachment") or {}
         ref = src.get("reference") or src.get("Num") or []
+        full = strip_html(att.get("content") or "")
+        low = full.lower()
         out.append({
             "id": src.get("id") or h.get("_id"),
             "spider": spider,
@@ -111,7 +113,8 @@ def fetch_decisions(topics):
             "title": strip_html(pick_lang(src.get("title"))),
             "abstract": strip_html(pick_lang(src.get("abstract"))),
             "url": att.get("content_url") or "",
-            "text": strip_html(att.get("content") or "")[:24000],
+            "text": full[:24000],
+            "matched": [t for t in topics if t.lower() in low],
         })
     return out
 
@@ -210,7 +213,11 @@ def summarize(d):
         messages=[{"role": "user", "content": PROMPT.format(
             ref=d["ref"] or d["id"], date=d["date"], text=decision_text(d))}],
     )
-    return "".join(b.text for b in msg.content if b.type == "text").strip()
+    text = "".join(b.text for b in msg.content if b.type == "text").strip()
+    if not text:
+        raise RuntimeError(f"leere Antwort (stop_reason={msg.stop_reason}, "
+                           f"blocks={[b.type for b in msg.content]})")
+    return text
 
 
 # ---------- digest ----------
@@ -226,8 +233,8 @@ def build_digest(decisions, consultations, deadlines, errors):
             label = d["ref"] or d["id"]
             link = f"[{label}]({d['url']})" if d["url"] else label
             parts.append(f"### {link} ({d['date']})")
-            if d["title"]:
-                parts.append(f"*{d['title']}*")
+            if d.get("matched"):
+                parts.append("Treffer: " + ", ".join(d["matched"]))
             parts.append((d.get("summary") or d["abstract"] or "_Keine Zusammenfassung._") + "\n")
     if consultations:
         parts.append("## Neue Vernehmlassungen\n")
@@ -282,6 +289,21 @@ def check(topics):
         print("Spider names seen in Facetten.json:", sorted(set(names))[:60])
     except requests.RequestException as e:
         print("Facetten.json ERROR", e)
+
+    print("\n== Topic counts over the last %d days" % LOOKBACK_DAYS)
+    try:
+        ds = fetch_decisions(topics)
+        print("decisions:", len(ds))
+        for t in topics:
+            print(f"  {sum(t in d['matched'] for d in ds):3d}  {t}")
+        if ds:
+            print("\n== One summary test")
+            try:
+                print(repr(summarize(ds[0])) or "(no key)")
+            except Exception as e:
+                print("SUMMARY ERROR", repr(e))
+    except Exception as e:
+        print("decisions ERROR", e)
 
     print("\n== Fedlex: all properties of one known consultation")
     known = "https://fedlex.data.admin.ch/eli/dl/proj/2026/102/cons_1"
