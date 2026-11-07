@@ -19,13 +19,21 @@ change in plain words, keep the code small, one Python file (radar.py).
   set. German, max four sentences, no speculation.
 - Output: one GitHub Issue "Radar YYYY-MM-DD"; nothing new → no issue.
 
-## Status
-- v1 written and tested offline with fake data (2026-11-07).
-- NOT yet verified against the live sources: the entscheidsuche field names
-  (id, date, title, abstract, reference, attachment.content_url), the spider
-  names, and the Fedlex predicates (jolux:Consultation, eventStartDate,
-  hasSubTask/eventEndDate, eventTitle). Run mode `check` and fix radar.py to
-  match what the sources actually return.
+## Status (2026-11-07)
+- Live and verified. First real run opened issue #1 (17 decisions, all
+  summarized, 2 consultations). seen.json is committed back by the workflow.
+- entscheidsuche: fields confirmed (id, date, title, reference,
+  attachment.content_url, attachment.content = full text). The search hit
+  already carries the full text; no second download needed. CH_BGE returned
+  0 hits in the 60-day window on the first check; CH_BGer works.
+- Fedlex: jolux:Consultation has eventTitle (DE/FR/IT) and eventDescription;
+  the dates sit on the sub-task (jolux:hasSubTask → eventStartDate,
+  eventEndDate).
+- Haiku 5.5 thinks before answering: max_tokens must leave room (2000 now).
+  With 300 it returned only a thinking block.
+- Topics: "Auslegung" alone matched 26 of 38 decisions; replaced by narrower
+  terms. Each decision in the digest shows which topics matched ("Treffer"),
+  to make tuning easy. Mode `check` prints counts per topic.
 
 ## Rules
 - Secrets only from env (ANTHROPIC_API_KEY, GITHUB_TOKEN). Never in code.
