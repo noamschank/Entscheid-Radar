@@ -111,12 +111,15 @@ def fetch_decisions(topics):
             "title": strip_html(pick_lang(src.get("title"))),
             "abstract": strip_html(pick_lang(src.get("abstract"))),
             "url": att.get("content_url") or "",
+            "text": strip_html(att.get("content") or "")[:24000],
         })
     return out
 
 
 def decision_text(d, limit=24000):
     """Full text for the summary. Falls back to the abstract."""
+    if d.get("text"):
+        return d["text"][:limit]
     if not d["url"]:
         return d["abstract"]
     try:
@@ -149,8 +152,9 @@ PREFIX jolux: <http://data.legilux.public.lu/resource/ontology/jolux#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 SELECT ?c ?start ?end ?title WHERE {
   ?c a jolux:Consultation ;
-     jolux:eventStartDate ?start .
-  OPTIONAL { ?c jolux:hasSubTask ?t . ?t jolux:eventEndDate ?end . }
+     jolux:hasSubTask ?t .
+  ?t jolux:eventStartDate ?start .
+  OPTIONAL { ?t jolux:eventEndDate ?end . }
   OPTIONAL { ?c jolux:eventTitle ?title . FILTER(lang(?title) = "de") }
   FILTER(?start >= "%s"^^xsd:date)
 }
@@ -283,6 +287,9 @@ def check(topics):
     known = "https://fedlex.data.admin.ch/eli/dl/proj/2026/102/cons_1"
     try:
         for row in sparql(f"SELECT ?p ?o WHERE {{ <{known}> ?p ?o }} LIMIT 60"):
+            print(row["p"]["value"], "=>", row["o"]["value"][:120])
+        print("\n== Fedlex: its sub-task")
+        for row in sparql(f"SELECT ?p ?o WHERE {{ <{known}/cons-open> ?p ?o }} LIMIT 40"):
             print(row["p"]["value"], "=>", row["o"]["value"][:120])
         print("\n== Fedlex: result of the consultation query")
         for c in fetch_consultations()[:5]:
