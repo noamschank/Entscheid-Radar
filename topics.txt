@@ -1,0 +1,18 @@
+# One topic per line. A decision is reported if it contains any of them.
+# Lines starting with # are ignored. Edit freely.
+Auslegung
+Gewaltenteilung
+Gesetzmässigkeitsprinzip
+Legalitätsprinzip
+Verfassungsgerichtsbarkeit
+Art. 190 BV
+Schubert
+völkerrechtskonform
+Föderalismus
+direkte Demokratie
+Volksinitiative
+Art. 36 BV
+Notrecht
+Methodenpluralismus
+interprétation conforme
+séparation des pouvoirs

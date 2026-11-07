@@ -1,0 +1,40 @@
+name: radar
+
+on:
+  schedule:
+    - cron: "40 5 * * *"   # 05:40 UTC = 06:40 Zurich in winter, 07:40 in summer
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "normal, check (show raw source data), seed (mark all as seen), dry-run"
+        default: normal
+        type: choice
+        options: [normal, check, seed, dry-run]
+
+permissions:
+  contents: write   # to save seen.json
+  issues: write     # to open the digest issue
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Run radar
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MODE: ${{ inputs.mode || 'normal' }}
+        run: |
+          if [ "$MODE" = "normal" ]; then python radar.py; else python radar.py --$MODE; fi
+      - name: Save seen.json
+        if: ${{ (inputs.mode || 'normal') == 'normal' || inputs.mode == 'seed' }}
+        run: |
+          git config user.name "entscheid-radar"
+          git config user.email "actions@users.noreply.github.com"
+          git add seen.json
+          git diff --cached --quiet || (git commit -m "Update seen.json" && git push)
