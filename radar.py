@@ -209,7 +209,7 @@ def summarize(d):
     client = anthropic.Anthropic(api_key=key)
     msg = client.messages.create(
         model=MODEL,
-        max_tokens=300,
+        max_tokens=2000,  # room for thinking + the answer
         messages=[{"role": "user", "content": PROMPT.format(
             ref=d["ref"] or d["id"], date=d["date"], text=decision_text(d))}],
     )

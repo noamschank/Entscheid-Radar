@@ -1,13 +1,15 @@
 # One topic per line. A decision is reported if it contains any of them.
 # Lines starting with # are ignored. Edit freely.
-Auslegung
+verfassungskonforme Auslegung
+teleologische Auslegung
+völkerrechtskonforme Auslegung
+echte Lücke
 Gewaltenteilung
 Gesetzmässigkeitsprinzip
 Legalitätsprinzip
 Verfassungsgerichtsbarkeit
 Art. 190 BV
 Schubert
-völkerrechtskonform
 Föderalismus
 direkte Demokratie
 Volksinitiative
