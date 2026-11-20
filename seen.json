@@ -27,5 +27,7 @@
   "https://fedlex.data.admin.ch/eli/dl/proj/2026/102/cons_1",
   "https://fedlex.data.admin.ch/eli/dl/proj/2026/59/cons_1"
  ],
- "warned": []
+ "warned": [
+  "https://fedlex.data.admin.ch/eli/dl/proj/2026/102/cons_1"
+ ]
 }
